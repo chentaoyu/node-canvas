@@ -9,14 +9,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      timestmp: $(date +%s)
 
     steps:
       - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
       - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag ${{secrets.ALIYUN_REGISTRY}}/ntdk4399/node:$timestmp
-      - name: log in  registry
+        run: |
+          TIMESTAMP=$(date +%s)
+          docker buildx build --load --file Dockerfile --tag ${{secrets.ALIYUN_REGISTRY}}/ntdk4399/node:$TIMESTAMP .
+          echo "IMAGE_TAG=${{secrets.ALIYUN_REGISTRY}}/ntdk4399/node:$TIMESTAMP" >> $GITHUB_ENV
+      - name: log in registry
         run: echo "${{ secrets.ALIYUN_REGISTRY_PASSWORD }}" | docker login ${{secrets.ALIYUN_REGISTRY}} --username=${{secrets.ALIYUN_REGISTRY_USER}} --password-stdin
       - name: push image
-        run: docker push ${{secrets.ALIYUN_REGISTRY}}/ntdk4399/node:$timestmp
+        run: docker push $IMAGE_TAG
