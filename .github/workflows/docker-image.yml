@@ -11,8 +11,14 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    env:
+      timestmp: $(date +%s)
 
     steps:
     - uses: actions/checkout@v4
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      run: docker build . --file Dockerfile --tag ${{secrets.ALIYUN_REGISTRY}}/ntdk4399/node:$timestmp
+    - name: log in  registry
+      run: echo "${{ secrets.ALIYUN_REGISTRY_PASSWORD }}" | docker login ${{secrets.ALIYUN_REGISTRY}} --username=${{secrets.ALIYUN_REGISTRY_USER}} --password-stdin
+    - name: push image
+    - run: docker push ${{secrets.ALIYUN_REGISTRY}}/ntdk4399/node:$timestmp
